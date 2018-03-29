@@ -1,3 +1,5 @@
 debug.log
 config.yml
 .idea/*
+logger.log
+errors.log

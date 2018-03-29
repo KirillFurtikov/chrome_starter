@@ -5,11 +5,26 @@ require 'uri'
 require 'net/http'
 require 'selenium-webdriver'
 require_relative 'chromerunner'
+require 'logger'
 require 'irb'
 
-@chrome = ChromeRunner.new
-def restart
-  @chrome.browser.quit if @chrome.browser
+$logger = Logger.new('logger.log')
+$logger.level = Logger::DEBUG
+
+def start
+  $logger.info 'Running browser'
   @chrome = ChromeRunner.new
+  $logger.info 'You have runned browser'
 end
+
+def restart
+  $logger.info 'Restarting browser'
+  if @chrome.browser
+    @chrome.browser.quit
+    $logger.info 'You have restarted browser'
+  end
+  start
+end
+
+start
 IRB.start(__FILE__)
