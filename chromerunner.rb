@@ -1,14 +1,15 @@
 class ChromeRunner
-  AUTHOR = '@callhose'.freeze
+  AUTHOR      = '@callhose'.freeze
   ERRORS_FILE = 'errors.log'
-  CONFIG = YAML.load_file(File.open('config.yml')).freeze
-  PULSCEN = CONFIG['project']['pulscen']['name'].freeze
-  BLIZKO = CONFIG['project']['blizko']['name'].freeze
+  CONFIG      = YAML.load_file(File.open('config.yml')).freeze
+  PROJECTS    = CONFIG['project'].keys
+  PULSCEN     = PROJECTS['pulscen']['name'].freeze
+  BLIZKO      = PROJECTS['blizko']['name'].freeze
 
   attr_reader :url, :project, :path, :browser, :role, :options
 
-	def initialize(uri = nil)
-    @url = url(uri)
+  def initialize(uri = nil)
+    @url     = url(uri)
     @project = project
     $logger.info "You have entered #{@project}"
     @path = role_auth_path(@project)
@@ -16,16 +17,15 @@ class ChromeRunner
     puts 'Запускаем браузер'
 
     begin
-      raise 'ERROR AHAHA'
       $logger.info "Trying to start browser with options #{options}"
       @browser = Selenium::WebDriver.for :chrome,
-                                       options: options
+                                         options: options
       puts "Авторизуюсь под ролью: #{@role}"
       $logger.info "Trying to navigate to #{@url + @path}"
-		  @browser.navigate.to @url + @path
+      @browser.navigate.to @url + @path
     rescue => e
       puts 'Что-то пошло не так :('
-      puts "Опиши подробно, что привело к ошибке и скинь в телегу #{AUTHOR} текст из файлов #{ERRORS_FILE} и #{logger.log}"
+      puts "Опиши подробно, что привело к ошибке и скинь в телегу #{AUTHOR} текст из файлов #{ERRORS_FILE} и logger.log"
       $logger.error 'Catching error...'
       trace(e)
     end
@@ -47,15 +47,15 @@ class ChromeRunner
     @options
   end
 
-	def project
-    url = URI(@url)
+  def project
+    url  = URI(@url)
     body = Net::HTTP.get(url).force_encoding('UTF-8')
 
-    if body.include?(CONFIG['project']['pulscen']['mark'])
+    if body.include?(PROJECTS['pulscen']['mark'])
       $logger.info "Project was detected as #{PULSCEN} with key 1"
       puts "Проект автоматически определен - #{PULSCEN}"
       1
-    elsif body.include?(CONFIG['project']['blizko']['mark'])
+    elsif body.include?(PROJECTS['blizko']['mark'])
       $logger.info "Project was detected as #{BLIZKO} with key 2"
       puts "Проект автоматически определен - #{BLIZKO}"
       2
@@ -63,12 +63,12 @@ class ChromeRunner
       $logger.info "Project wasn't detected"
       puts 'Не удалось автоматически определить проект'
       puts 'Выбери самостоятельно:'
-      CONFIG['project'].each_with_index { |key, index| puts "#{index + 1}) #{CONFIG['project'][key[0]]['name']}" }
+      PROJECTS.each_with_index { |key, index| puts "#{index + 1}) #{PROJECTS[key[0]]['name']}" }
       gets.chomp.to_i
     end
-	end
-	
-	def url(uri)
+  end
+
+  def url(uri)
     print 'Введи урл: '
     $logger.info 'Ask url'
     url = uri.nil? ? gets.chomp : uri
@@ -89,9 +89,9 @@ class ChromeRunner
     roles =
       case project
       when 1
-        CONFIG['project']['pulscen']['roles']
+        PROJECTS['pulscen']['roles']
       when 2
-        CONFIG['project']['blizko']['roles']
+        PROJECTS['blizko']['roles']
       else
         raise 'Incorrect project!'
       end
@@ -100,8 +100,8 @@ class ChromeRunner
     puts 'Роль:'
     roles.keys.each_with_index { |k, i| puts "#{i + 1}) #{k}" }
     role_index = gets.chomp.to_i
-    @role = roles.keys[role_index]
-    path = roles[@role] # return path for authenticate
+    @role      = roles.keys[role_index]
+    path       = roles[@role] # return path for authenticate
 
     if path.empty?
       $logger.info "Current key has not value"
