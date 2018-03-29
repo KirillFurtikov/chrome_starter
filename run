@@ -2,6 +2,7 @@
 require 'bundler/setup'
 require 'yaml'
 require 'uri'
+require 'net/http'
 require 'selenium-webdriver'
 require_relative 'chromerunner'
 require 'irb'

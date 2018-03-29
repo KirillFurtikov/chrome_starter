@@ -1,5 +1,7 @@
 class ChromeRunner
   CONFIG = YAML.load_file(File.open('config.yml')).freeze
+  PULSCEN = CONFIG['project']['pulscen']['name']
+  BLIZKO = CONFIG['project']['blizko']['name']
 
   attr_reader :url, :project, :path, :browser, :role
 
@@ -21,10 +23,20 @@ class ChromeRunner
   end
 
 	def project
-    puts 'Проект:'
-		puts '1) Пульс Цен'
-		puts '2) Близко'
-		gets.chomp.to_i
+    url = URI(@url)
+    body = Net::HTTP.get(url).force_encoding('UTF-8')
+    if body.include?(CONFIG['project']['pulscen']['mark'])
+      puts "Проект автоматически определен - #{PULSCEN}"
+      1
+    elsif body.include?(CONFIG['project']['blizko']['mark'])
+      puts "Проект автоматически определен - #{BLIZKO}"
+      2
+    else
+      puts 'Не удалось автоматически определить проект'
+      puts 'Выбери самостоятельно:'
+      CONFIG['project'].each_with_index { |key, index| puts "#{index + 1}) #{CONFIG['project'][key[0]]['name']}" }
+      gets.chomp.to_i
+    end
 	end
 	
 	def url(uri)
