@@ -1,0 +1,7 @@
+project:
+  pulscen:
+    roles:
+      admin: ''
+  blizko:
+    roles:
+      admin: ''

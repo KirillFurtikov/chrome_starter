@@ -62,7 +62,6 @@ class ChromeRunner
     else
       path
     end
-
   end
 
   private
