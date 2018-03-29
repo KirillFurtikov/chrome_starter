@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+require 'bundler/setup'
+require 'yaml'
+require 'uri'
+require 'selenium-webdriver'
+require_relative 'chromerunner'
+require 'irb'
+
+@chrome = ChromeRunner.new
+def restart
+  @chrome.browser.quit if @chrome.browser
+  @chrome = ChromeRunner.new
+end
+IRB.start(__FILE__)
