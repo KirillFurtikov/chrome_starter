@@ -1,7 +1,11 @@
 project:
   pulscen:
+    name: ''
+    mark: ''
     roles:
-      admin: ''
+      super_user: ''
   blizko:
+    name: ''
+    mark: ''
     roles:
-      admin: ''
+      super_user: ''

@@ -9,11 +9,12 @@ class ChromeRunner
 
 	def initialize(uri = nil)
     @url = url(uri)
-		@project = project
+    @project = project
     $logger.info "You have entered #{@project}"
     @path = role_auth_path(@project)
     $logger.info "Path is #{@path}"
     puts 'Запускаем браузер'
+
     begin
       raise 'ERROR AHAHA'
       $logger.info "Trying to start browser with options #{options}"
@@ -36,6 +37,7 @@ class ChromeRunner
       f.puts error.inspect
       f.puts error.backtrace
     end
+
     $logger.info "Error backtrace was saved into #{ERRORS_FILE}"
   end
 
@@ -48,6 +50,7 @@ class ChromeRunner
 	def project
     url = URI(@url)
     body = Net::HTTP.get(url).force_encoding('UTF-8')
+
     if body.include?(CONFIG['project']['pulscen']['mark'])
       $logger.info "Project was detected as #{PULSCEN} with key 1"
       puts "Проект автоматически определен - #{PULSCEN}"
@@ -71,6 +74,7 @@ class ChromeRunner
     url = uri.nil? ? gets.chomp : uri
     $logger.info "You have entered url: #{url}"
     url = URI(url)
+
     if url.scheme.nil? || url.host.nil?
       $logger.info 'You have entered incorrect url'
       puts 'Будь человеком, введи нормальный урл, а не ЭТО'
@@ -91,12 +95,14 @@ class ChromeRunner
       else
         raise 'Incorrect project!'
       end
+
     $logger.info "roles: #{roles}"
     puts 'Роль:'
     roles.keys.each_with_index { |k, i| puts "#{i + 1}) #{k}" }
     role_index = gets.chomp.to_i
     @role = roles.keys[role_index]
     path = roles[@role] # return path for authenticate
+
     if path.empty?
       $logger.info "Current key has not value"
       puts 'Ключа для авторизация нет в файле config.yml'
