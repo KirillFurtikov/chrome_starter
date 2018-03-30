@@ -1,10 +1,9 @@
 #!/usr/bin/env ruby
-require 'bundler/setup'
 require 'yaml'
 require 'uri'
 require 'net/http'
 require 'selenium-webdriver'
-require_relative 'chromerunner'
+require_relative 'chrome-runner'
 require 'logger'
 require 'irb'
 
@@ -12,18 +11,26 @@ $logger = Logger.new('logger.log')
 $logger.level = Logger::DEBUG
 
 def start
+  raise 'You already started browser!' if !@chrome.nil? && @chrome.browser
   $logger.info 'Running browser'
   @chrome = ChromeRunner.new
-  $logger.info 'You have runned browser'
+  $logger.info 'You have started browser'
 end
 
 def restart
   $logger.info 'Restarting browser'
+  stop
+  start
+  $logger.info 'You have restarted browser'
+end
+
+def stop
+  $logger.info 'Stopping browser'
   if @chrome.browser
     @chrome.browser.quit
-    $logger.info 'You have restarted browser'
+    $logger.info 'You have stopped browser'
+    @chrome = nil
   end
-  start
 end
 
 start

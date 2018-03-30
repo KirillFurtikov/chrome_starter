@@ -3,3 +3,4 @@ config.yml
 .idea/*
 logger.log
 errors.log
+Gemfile.lock
