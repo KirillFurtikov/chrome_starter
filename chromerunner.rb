@@ -9,36 +9,33 @@ class ChromeRunner
   attr_reader :url, :project, :path, :browser, :role, :options
 
   def initialize(uri = nil)
-    @url     = url(uri)
-    @project = project
+    @url            = url(uri)
+    @normalized_url = normalize_url(@url)
+    @project        = project
+
     $logger.info "You have entered #{@project}"
     @path = role_auth_path(@project)
+
     $logger.info "Path is #{@path}"
     puts 'Запускаем браузер'
 
     begin
-      $logger.info "Trying to start browser with options #{options}"
+      $logger.info "Trying to start browser with options #{options.args}"
       @browser = Selenium::WebDriver.for :chrome,
                                          options: options
       puts "Авторизуюсь под ролью: #{@role}"
-      $logger.info "Trying to navigate to #{@url + @path}"
-      @browser.navigate.to @url + @path
+
+      $logger.info "Trying to navigate to normalized url #{@normalized_url} with path: #{@path}"
+      @browser.navigate.to(@normalized_url + @path)
+
+      $logger.info "Trying to navigate to url from arg: #{@url.to_s}"
+      @browser.navigate.to(@url.to_s)
     rescue => e
       puts 'Что-то пошло не так :('
-      puts "Опиши подробно, что привело к ошибке и скинь в телегу #{AUTHOR} текст из файлов #{ERRORS_FILE} и logger.log"
+      puts "Опиши подробно, что привело к ошибке и скинь в телегу #{AUTHOR} файлы #{ERRORS_FILE} и logger.log"
       $logger.error 'Catching error...'
       trace(e)
     end
-  end
-
-  def trace(error)
-    $logger.info "Trying to save error backtrace to #{ERRORS_FILE}"
-    File.open(File.join(Dir.pwd, ERRORS_FILE), 'w') do |f|
-      f.puts error.inspect
-      f.puts error.backtrace
-    end
-
-    $logger.info "Error backtrace was saved into #{ERRORS_FILE}"
   end
 
   def options
@@ -48,7 +45,7 @@ class ChromeRunner
   end
 
   def project
-    url  = URI(@url)
+    url  = URI(@normalized_url)
     body = Net::HTTP.get(url).force_encoding('UTF-8')
 
     if body.include?(PROJECTS['pulscen']['mark'])
@@ -60,7 +57,7 @@ class ChromeRunner
       puts "Проект автоматически определен - #{BLIZKO}"
       2
     else
-      $logger.info "Project wasn't detected"
+      $logger.info 'Project wasn\'t detected'
       puts 'Не удалось автоматически определить проект'
       puts 'Выбери самостоятельно:'
       PROJECTS.each_with_index { |key, index| puts "#{index + 1}) #{PROJECTS[key[0]]['name']}" }
@@ -80,7 +77,7 @@ class ChromeRunner
       puts 'Будь человеком, введи нормальный урл, а не ЭТО'
       raise 'Incorrect url!'
     else
-      normalize_url(url)
+      url
     end
   end
 
@@ -121,5 +118,15 @@ class ChromeRunner
     url.host = url.host.to_s.split('.')[-4..-1].join('.')
     $logger.info "url.host: #{url.host}"
     url.scheme + '://' + url.host
+  end
+
+  def trace(error)
+    $logger.info "Trying to save error backtrace to #{ERRORS_FILE}"
+    File.open(File.join(Dir.pwd, ERRORS_FILE), 'w') do |f|
+      f.puts error.inspect
+      f.puts error.backtrace
+    end
+
+    $logger.info "Error backtrace was saved into #{ERRORS_FILE}"
   end
 end
