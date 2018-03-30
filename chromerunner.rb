@@ -2,7 +2,7 @@ class ChromeRunner
   AUTHOR      = '@callhose'.freeze
   ERRORS_FILE = 'errors.log'
   CONFIG      = YAML.load_file(File.open('config.yml')).freeze
-  PROJECTS    = CONFIG['project'].keys
+  PROJECTS    = CONFIG['project']
   PULSCEN     = PROJECTS['pulscen']['name'].freeze
   BLIZKO      = PROJECTS['blizko']['name'].freeze
 
@@ -99,12 +99,12 @@ class ChromeRunner
     $logger.info "roles: #{roles}"
     puts 'Роль:'
     roles.keys.each_with_index { |k, i| puts "#{i + 1}) #{k}" }
-    role_index = gets.chomp.to_i
+    role_index = gets.chomp.to_i - 1
     @role      = roles.keys[role_index]
     path       = roles[@role] # return path for authenticate
 
     if path.empty?
-      $logger.info "Current key has not value"
+      $logger.info 'Current key has not value'
       puts 'Ключа для авторизация нет в файле config.yml'
       puts 'Выбери другую роль или заполни файл'
       return role_auth_path(@project)
