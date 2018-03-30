@@ -1,12 +1,13 @@
 class ChromeRunner
   AUTHOR      = '@callhose'.freeze
-  ERRORS_FILE = 'errors.log'
+  ERRORS_FILE = 'logs/errors.log'
   CONFIG      = YAML.load_file(File.open('config.yml')).freeze
   PROJECTS    = CONFIG['project']
   PULSCEN     = PROJECTS['pulscen']['name'].freeze
   BLIZKO      = PROJECTS['blizko']['name'].freeze
 
-  attr_reader :url, :project, :path, :browser, :role, :options
+  attr_reader :url, :browser, :role, :options
+  attr_accessor :path
 
   def initialize(uri = nil)
     @url            = url(uri)
@@ -18,21 +19,29 @@ class ChromeRunner
 
     $logger.info "Path is #{@path}"
     puts 'Запускаем браузер'
+    browser_initialize(options)
+    navigate_authorized
+  end
 
+  def browser_initialize(options)
+    $logger.info "Trying to start browser with options #{options.args}"
+    @browser ||= Selenium::WebDriver.for :chrome,
+                                       options: options
+  end
+
+  def navigate_authorized
     begin
-      $logger.info "Trying to start browser with options #{options.args}"
-      @browser = Selenium::WebDriver.for :chrome,
-                                         options: options
       puts "Авторизуюсь под ролью: #{@role}"
 
       $logger.info "Trying to navigate to normalized url #{@normalized_url} with path: #{@path}"
       @browser.navigate.to(@normalized_url + @path)
 
-      $logger.info "Trying to navigate to url from arg: #{@url.to_s}"
-      @browser.navigate.to(@url.to_s)
+      $logger.info "Trying to navigate to url from arg: #{@url}"
+      @browser.navigate.to(@url)
     rescue => e
       puts 'Что-то пошло не так :('
-      puts "Опиши подробно, что привело к ошибке и скинь в телегу #{AUTHOR} файлы #{ERRORS_FILE} и logger.log"
+      puts "Опиши подробно, что привело к ошибке и скинь в телегу #{AUTHOR}" \
+        " файлы #{ERRORS_FILE}, logger.log и selenium.log"
       $logger.error 'Catching error...'
       trace(e)
     end
@@ -82,7 +91,6 @@ class ChromeRunner
   end
 
   def role_auth_path(project)
-    $logger.info "role_auth_path(#{project})"
     roles =
       case project
       when 1
@@ -115,9 +123,10 @@ class ChromeRunner
 
   def normalize_url(url)
     $logger.info 'Trying normalize url'
-    url.host = url.host.to_s.split('.')[-4..-1].join('.')
-    $logger.info "url.host: #{url.host}"
-    url.scheme + '://' + url.host
+    uri = URI(url.to_s)
+    uri.host = uri.host.to_s.split('.')[-4..-1].join('.')
+    $logger.info "url.host: #{uri.host}"
+    uri.scheme + '://' + uri.host
   end
 
   def trace(error)

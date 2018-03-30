@@ -2,12 +2,17 @@
 require 'yaml'
 require 'uri'
 require 'net/http'
+require 'fileutils'
 require 'selenium-webdriver'
 require_relative 'chrome-runner'
 require 'logger'
 require 'irb'
 
-$logger = Logger.new('logger.log')
+FileUtils.mkdir_p 'logs'
+
+$logger = Logger.new('logs/logger.log')
+Selenium::WebDriver.logger.level = :debug
+$selenium_logger = Selenium::WebDriver.logger.output = 'logs/selenium.log'
 $logger.level = Logger::DEBUG
 
 def start
@@ -26,11 +31,29 @@ end
 
 def stop
   $logger.info 'Stopping browser'
-  if @chrome.browser
+  if !@chrome.nil? && @chrome.browser
     @chrome.browser.quit
     $logger.info 'You have stopped browser'
     @chrome = nil
+    true
   end
+end
+
+def logout
+  $logger.info 'Log out'
+  @chrome.browser.manage.delete_all_cookies
+  $logger.info 'Refreshing page'
+  @chrome.browser.navigate.refresh
+  $logger.info 'Page was refreshed'
+end
+
+def login
+  logout
+  $logger.info 'Log in'
+  @chrome.path = @chrome.role_auth_path(@chrome.project)
+  @chrome.browser_initialize(@chrome.options)
+  @chrome.navigate_authorized
+  $logger.info 'Log in successful'
 end
 
 start
