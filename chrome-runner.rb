@@ -70,7 +70,7 @@ class ChromeRunner
       puts 'Не удалось автоматически определить проект'
       puts 'Выбери самостоятельно:'
       PROJECTS.each_with_index { |key, index| puts "#{index + 1}) #{PROJECTS[key[0]]['name']}" }
-      gets.chomp.to_i
+      STDIN.getch.chomp.to_i
     end
   end
 
@@ -104,7 +104,7 @@ class ChromeRunner
     $logger.info "roles: #{roles}"
     puts 'Роль:'
     roles.keys.each_with_index { |k, i| puts "#{i + 1}) #{k}" }
-    role_index = gets.chomp.to_i - 1
+    role_index = STDIN.getch.chomp.to_i - 1
     @role      = roles.keys[role_index]
     path       = roles[@role] # return path for authenticate
 

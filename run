@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+require 'io/console'
 require 'yaml'
 require 'uri'
 require 'net/http'
