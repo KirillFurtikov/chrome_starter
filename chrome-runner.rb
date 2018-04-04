@@ -49,7 +49,11 @@ class ChromeRunner
 
   def options
     @options = Selenium::WebDriver::Chrome::Options.new
-    @options.add_argument('--start-maximized')
+	
+    CONFIG['chrome']['arguments'].each do |argument|
+      @options.add_argument(argument)
+    end
+	
     @options
   end
 
@@ -70,7 +74,7 @@ class ChromeRunner
       puts 'Не удалось автоматически определить проект'
       puts 'Выбери самостоятельно:'
       PROJECTS.each_with_index { |key, index| puts "#{index + 1}) #{PROJECTS[key[0]]['name']}" }
-      STDIN.getch.chomp.to_i
+      STDIN.getch.to_i
     end
   end
 
@@ -104,7 +108,8 @@ class ChromeRunner
     $logger.info "roles: #{roles}"
     puts 'Роль:'
     roles.keys.each_with_index { |k, i| puts "#{i + 1}) #{k}" }
-    role_index = STDIN.getch.chomp.to_i - 1
+    role_index = STDIN.getch.to_i - 1
+    invalid_value if role_index == -1
     @role      = roles.keys[role_index]
     path       = roles[@role] # return path for authenticate
 
@@ -137,5 +142,9 @@ class ChromeRunner
     end
 
     $logger.info "Error backtrace was saved into #{ERRORS_FILE}"
+  end
+  
+  def invalid_value
+    raise 'Укажи корректное значение!'
   end
 end

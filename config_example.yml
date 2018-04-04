@@ -9,3 +9,6 @@ project:
     mark: ''
     roles:
       super_user: ''
+chrome:
+  arguments:
+    - '--start-maximized'
